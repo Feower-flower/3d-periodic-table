@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>three.js css3d - periodic table (sheet-driven)</title>
+    <style> 
+        a { 
+            color: #8ff; 
+        }
+
+        #info {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            font-size: 14px;
+            pointer-events: none; /* prevents blocking clicks on 3D scene */
+        }
+
+        #info a {
+            color: #8ff;
+            text-decoration: none;
+        }
+
+
+        html, body {
+            background: #070707;
+        }
+
+        #menu {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+        }
+
+        :root {
+            --tile-text: #f3fbfa;
+            --tile-accent: rgba(255,255,255,0.06);
+            --glow-color: rgba(100, 200, 255, 0.8);
+            --tile-bg: rgba(30, 40, 50, 0.7)
+        }
+
+       .element {
+         width: 120px;
+         height: 160px;
+         /* Initial subtle glow */
+        box-shadow: 0px 0px 8px rgba(0,255,255,0.3);
+        border: 1px solid rgba(127,255,255,0.15);
+        font-family: Helvetica, sans-serif;
+        text-align: center;
+        line-height: normal;
+        cursor: default;
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start; /* Changed to flex-start for better layout */
+        /* 80% transparent background */
+        background-color: rgba(255, 255, 255, 0.2);
+        /* Smooth transition for all properties */
+        transition: all 0.3s ease;
+        /* Add depth */
+        backdrop-filter: blur(8px);
+    }
+
+    
+         .element .country {
+                    position: absolute;
+                    top: 10px;
+                    left: 10px;
+                    font-size: 11px;
+                    font-weight: 600; /* Changed to 600 for cleaner look */
+                    color: #ffffff; /* Plain white */
+                    margin: 0;
+                    padding: 0;
+                    text-shadow: none; /* No glow */
+                }
+          .element .age {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 11px;
+            font-weight: 600; /* Changed to 600 for cleaner look */
+            color: #ffffff; /* Plain white */
+            margin: 0;
+            padding: 0;
+            text-shadow: none; /* No glow */
+        }
+             .element .photo {
+                width: 64px;
+                height: 64px;
+                object-fit: cover;
+                border-radius: 50%;
+                margin: 35px 0 10px 0; /* Adjusted top margin to push photo down */
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                background: rgba(255, 255, 255, 0.1);
+                display: block;
+                transition: all 0.3s ease;
+            }
+                 .element .name {
+                    font-size: 14px;
+                    font-weight: 600; /* Cleaner weight */
+                    color: #ffffff; /* Plain white */
+                    margin: 0 0 4px 0;
+                    padding: 0 8px;
+                    max-width: 100%;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    text-shadow: none; /* No glow */
+                }
+                 .element .meta {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 4px 8px;
+                    font-size: 11px;
+                    color: rgba(255,255,255,0.95);
+                }
+                 .element .interest {
+                    font-size: 11px;
+                    color: #ffffff; /* Plain white */
+                    margin: 0;
+                    padding: 0 8px;
+                    max-width: 100%;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    text-shadow: none; /* No glow */
+                    opacity: 0.9; /* Slightly transparent for subtlety */
+                } 
+                button {
+                    color: rgba(127,255,255,0.95);
+                    background: transparent;
+                    outline: 1px solid rgba(127,255,255,0.75);
+                    border: 0px;
+                    padding: 5px 10px;
+                    cursor: pointer;
+                    border-radius: 6px;
+                }
+
+                .element:hover {
+                    /* Border will be set dynamically based on tile color */
+                    border: 2px solid currentColor; /* Will be overridden by JS */
+                    /* Glow will be set dynamically */
+                    box-shadow: 
+                    0px 0px 20px currentColor,
+                    0px 0px 30px currentColor,
+                    inset 0px 0px 15px currentColor;
+                    /* Slight lift effect */
+                    transform: translateY(-5px) scale(1.05);
+                    /* Slightly less transparent on hover for emphasis */
+                    background-color: rgba(255, 255, 255, 0.25);
+                }
+
+                /* Dynamic glow based on tile color */
+                .element:hover[style*="255, 80, 80"] {
+                    /* Red tile - red glow */
+                    border: 2px solid rgba(255, 80, 80, 0.9) !important;
+                    box-shadow: 
+                    0px 0px 20px rgba(255, 80, 80, 0.8),
+                    0px 0px 30px rgba(255, 80, 80, 0.5),
+                    inset 0px 0px 15px rgba(255, 80, 80, 0.3) !important;
+                }
+
+                .element:hover[style*="255, 200, 50"] {
+                    /* Yellow tile - yellow glow */
+                    border: 2px solid rgba(255, 200, 50, 0.9) !important;
+                    box-shadow: 
+                    0px 0px 20px rgba(255, 200, 50, 0.8),
+                    0px 0px 30px rgba(255, 200, 50, 0.5),
+                    inset 0px 0px 15px rgba(255, 200, 50, 0.3) !important;
+                }
+
+                .element:hover[style*="80, 220, 100"] {
+                    /* Green tile - green glow */
+                    border: 2px solid rgba(80, 220, 100, 0.9) !important;
+                    box-shadow: 
+                    0px 0px 20px rgba(80, 220, 100, 0.8),
+                    0px 0px 30px rgba(80, 220, 100, 0.5),
+                    inset 0px 0px 15px rgba(80, 220, 100, 0.3) !important;
+                }
+
+
+                .element:hover[style*="0, 100, 180"] {
+                    /* Blue tile (default) - blue glow */
+                    border: 2px solid rgba(0, 100, 180, 0.9) !important;
+                    box-shadow: 
+                    0px 0px 20px rgba(0, 100, 180, 0.8),
+                    0px 0px 30px rgba(0, 100, 180, 0.5),
+                    inset 0px 0px 15px rgba(0, 100, 180, 0.3) !important;
+                }
+
+                /* Enhance photo on hover */
+                .element:hover .photo {
+                    border: 2px solid rgba(255, 255, 255, 0.8);
+                    box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+                    transform: scale(1.1);
+                }
+
+                button:active { color: #000000; background-color: rgba(0,255,255,0.75); }
+        
+        /* top-left control */
+        #controls {
+            position: absolute;
+            left: 16px;
+            top: 16px;
+            z-index: 10;
+            background: rgba(0,0,0,0.35);
+            padding: 10px;
+            border-radius: 8px;
+            color: #fff;
+            backdrop-filter: blur(6px);
+            font-family: Arial, sans-serif;
+        }
+        #controls button { margin: 0 6px; }
+        #controls small { display:block; color: #ddd; margin-top: 6px; font-size: 12px;}
+        #status { margin-top:8px; font-size: 12px; color: #ffd;}
+    </style>
+</head>
+<body>
+    
+    <div id="info">
+        <a href="https://threejs.org" targets="_blank" rel="noopener">three.js</a>
+        CSS3D - periodic table (sheet-driven)
+    </div>
+    <div id="controls">
+        <button id="loadPublicBtn">Load public sheet</button>
+        <button id="clearBtn">Clear</button>
+        <div>Please click on "Load public sheet" to generate data</div>
+        <div id="status">status: idle</div>
+    </div>
+
+    <div id="container"></div>
+
+    <div id="menu">
+        <button id="table">TABLE</button>
+        <button id="sphere">SPHERE</button>
+        <button id="helix">HELIX</button>
+        <button id="grid">GRID</button>
+    </div> 
+    
+    <script type="importmap">
+			{
+				"imports": {
+					"three": "../build/three.module.js",
+					"three/addons/": "./jsm/"
+				}
+			}
+		</script>
+
+    <script type="module">
+
+        import * as THREE from 'three';
+
+			import TWEEN from 'three/addons/libs/tween.module.js';
+			import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
+			import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
+
+            // ---------- AUTH CHECK (put this right after imports) ----------
+(async function requireAuth() {
+  // quick dev-mode guard: if you want to skip auth while testing, set SKIP_AUTH = true
+  const SKIP_AUTH = false;
+  if (SKIP_AUTH) { init(); animate(); return; }
+
+  const idToken = localStorage.getItem('id_token');
+  if (!idToken) {
+    // not signed in → redirect to sign-in page
+    window.location.href = 'GoogleSignIn.html';
+    return;
+  }
+
+  try {
+    // quick client-side verification with Google (good for demo)
+    const r = await fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(idToken));
+    if (!r.ok) throw new Error('invalid token');
+
+    const info = await r.json();
+    // optional: enforce audience check (replace with your client id)
+    const EXPECTED_AUD = '941905774150-elvbh1gt6ktol0l2137sqaqb8rauoivr.apps.googleusercontent.com';
+    if (info.aud !== EXPECTED_AUD) throw new Error('aud mismatch');
+
+    // token ok — show user in status and continue
+    const user = { name: info.name || '', email: info.email || '', picture: info.picture || '' };
+    const st = document.getElementById('status');
+    if (st) st.textContent = `signed in: ${user.email || user.name || 'user'}`;
+
+    // now start the app
+    init();
+    animate();
+  } catch (err) {
+    console.warn('Auth check failed:', err);
+    localStorage.removeItem('id_token');
+    localStorage.removeItem('user');
+    window.location.href = 'GoogleSignIn.html';
+  }
+})(); 
+// ---------- end auth check ----------
+
+
+
+        // ============ CONFIG ============
+        const SHEET_ID = '1IBznCZdSAoPuaVYTOU1EnfiknCCVQ63QIa7filPf8o4';
+        const SHEET_GID= 0;
+
+        let camera, scene, renderer;
+        let controls;
+        const objects = [];
+        const targets = { table: [], sphere: [], helix: [], grid: [], };
+
+      
+         function setStatus(s) {
+            const el = document.getElementById('status');
+            if (el)  el.textContent = 'status: ' + s;
+         }
+
+         function init() {
+            camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 1000);
+            camera.position.z = 3000;
+
+            scene = new THREE.Scene();
+
+            // renderer
+            renderer = new CSS3DRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            document.getElementById( 'container' ).appendChild( renderer.domElement );
+
+            // controls
+            controls = new TrackballControls( camera, renderer.domElement );
+            controls.minDistance = 500;
+            controls.maxDistance = 6000;
+            controls.addEventListener( 'change', render );
+
+            // menu buttons
+            document.getElementById( 'table' ).addEventListener( 'click', () => transform( targets.table, 2000) );
+            document.getElementById( 'sphere' ).addEventListener( 'click', () => transform( targets.sphere, 2000) );
+            document.getElementById( 'helix' ).addEventListener( 'click', () => transform( targets.helix, 2000) );
+            document.getElementById( 'grid' ).addEventListener( 'click', () => transform( targets.grid, 2000) );
+
+            // controls top-left
+            document.getElementById('loadPublicBtn').addEventListener('click', () => {
+                setStatus('fetching public sheet...');
+                fetchPublicSheet().then(rows => {
+                    if (rows && rows.length) {
+                        setStatus(rows.length + 'rows');
+                        buildFromRows(rows);
+                    } else {
+                        setStatus('no rows found in sheet');
+                    }
+                }).catch(err => {
+                    console.error(err);
+                    setStatus('public fetch failed:' +(err.message || err));
+                });
+            });
+
+            document.getElementById('clearBtn').addEventListener('click', () => {
+                clearScene();
+                setStatus('cleared');
+            });
+
+            if (SHEET_ID && SHEET_ID !== '1IBznCZdSAoPuaVYTOU1EnfiknCCVQ63QIa7filPf8o4') {
+            } else {
+                setStatus('SHeet_ID not set - click "Load public sheet" after updating config');
+                const sample = makeSampleRows(40);
+                buildFromRows(sample);
+            }
+
+            window.addEventListener( 'resize', onWindowResize );
+         }
+
+         // ------------ helpers to build scene ------------
+         function clearScene() {
+            // remove CSS3D objects from scene
+            objects.forEach(obj => {
+                if (obj.element && obj.element.parentNode) obj.element.parentNode.removeChild(obj.element);
+                scene.remove(obj);
+            });
+            objects.length = 0;
+            targets.table.length = 0;
+            targets.sphere.length = 0;
+            targets.helix.length = 0;
+            targets.grid.length = 0;
+         }
+
+         function buildFromRows(rows) {
+            // rows: array of objects [header: value]
+            clearScene();
+            createTilesFromData(rows);
+            buildTableTargets();
+            buildSphereTargets();
+            buildDoubleHelixTargets();
+            buildGridTargets();
+            transform(targets.table, 2000);
+         }
+
+     function createTilesFromData(data, options = { padTo200: false }) {
+    const rows = Array.isArray(data) ? data : [];
+    
+    let effectiveRows = rows.slice();
+    if (options.padTo200 && effectiveRows.length < 200) {
+        const padCount = 200 - effectiveRows.length;
+        for (let i = 0; i < padCount; i++) {
+            effectiveRows.push({
+                'Name': '',
+                'Photo': '',
+                'Age': '',
+                'Country': '',
+                'Interest': '',
+            });
+        }
+    }
+
+    effectiveRows.forEach((rowObj, i) => {
+        const name = (rowObj['Name'] ?? rowObj['name'] ?? '') + '';
+        const photo = (rowObj['Photo'] ?? rowObj['photo'] ?? '') + '';
+        const age = rowObj['Age'] ?? rowObj['age'] ?? '';
+        const country = rowObj['Country'] ?? rowObj['country'] ?? '';
+        const interest = rowObj['Interest'] ?? rowObj['interest'] ?? '';
+        const netRaw = rowObj['Net Worth'] ?? rowObj['NetWorth'] ?? rowObj['net_worth'] ?? '';
+        
+        // Create element
+        const element = document.createElement('div');
+        element.className = 'element';
+        
+        // Get tile color and set it as CSS variable for hover glow
+        const tileColor = getTileColor(netRaw);
+        
+        // Extract the RGB values
+        const rgbMatch = tileColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if (rgbMatch) {
+            const r = rgbMatch[1];
+            const g = rgbMatch[2];
+            const b = rgbMatch[3];
+            
+            // Apply as background color with 60% opacity
+            element.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.4)`;
+            
+            // Store the full color for hover effects
+            element.dataset.tileColor = tileColor;
+            
+            // Create CSS variables for the color with different opacities
+            element.style.setProperty('--tile-color', `rgb(${r}, ${g}, ${b})`);
+            element.style.setProperty('--tile-color-80', `rgba(${r}, ${g}, ${b}, 0.8)`);
+            element.style.setProperty('--tile-color-60', `rgba(${r}, ${g}, ${b}, 0.6)`);
+            element.style.setProperty('--tile-color-40', `rgba(${r}, ${g}, ${b}, 0.4)`);
+            element.style.setProperty('--tile-color-20', `rgba(${r}, ${g}, ${b}, 0.2)`);
+        }
+        
+        // Country (top-left)
+        const countryDiv = document.createElement('div');
+        countryDiv.className = 'country';
+        countryDiv.textContent = country || '';
+        element.appendChild(countryDiv);
+        
+        // Age (top-right)
+        const ageDiv = document.createElement('div');
+        ageDiv.className = 'age';
+        ageDiv.textContent = age ? String(age) : '';
+        element.appendChild(ageDiv);
+        
+        // Photo (moved down)
+        const img = document.createElement('img');
+        img.className = 'photo';
+        if (photo && (photo.startsWith('http') || photo.startsWith('//'))) {
+            img.src = photo.startsWith('//') ? location.protocol + photo : photo;
+            img.alt = name || '';
+        } else {
+            // Placeholder - using first letter of name
+            img.alt = '';
+            const placeholderText = name ? name.charAt(0).toUpperCase() : '';
+            
+            // Create canvas for placeholder image
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            
+            // Create colored circle matching tile color
+            if (rgbMatch) {
+                const r = rgbMatch[1];
+                const g = rgbMatch[2];
+                const b = rgbMatch[3];
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.4)`;
+            } else {
+                ctx.fillStyle = 'rgba(100, 100, 100, 0.3)';
+            }
+            ctx.beginPath();
+            ctx.arc(32, 32, 28, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw letter if available
+            if (placeholderText) {
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(placeholderText, 32, 32);
+            }
+            
+            img.src = canvas.toDataURL();
+        }
+        element.appendChild(img);
+        
+        // Name (below photo)
+        const nameEl = document.createElement('div');
+        nameEl.className = 'name';
+        nameEl.textContent = name || `Item ${i + 1}`;
+        element.appendChild(nameEl);
+        
+        // Interest (below name)
+        const interestEl = document.createElement('div');
+        interestEl.className = 'interest';
+        interestEl.textContent = interest || '';
+        element.appendChild(interestEl);
+        
+        // Add hover event listener for dynamic glow
+        element.addEventListener('mouseenter', function() {
+            if (rgbMatch) {
+                const r = rgbMatch[1];
+                const g = rgbMatch[2];
+                const b = rgbMatch[3];
+                
+                // Apply border color matching tile
+                this.style.borderColor = `rgba(${r}, ${g}, ${b}, 0.9)`;
+                
+                // Apply glow effect matching tile color
+                this.style.boxShadow = `
+                    0px 0px 20px rgba(${r}, ${g}, ${b}, 0.8),
+                    0px 0px 30px rgba(${r}, ${g}, ${b}, 0.5),
+                    inset 0px 0px 15px rgba(${r}, ${g}, ${b}, 0.3)
+                `;
+            }
+        });
+        
+        element.addEventListener('mouseleave', function() {
+            // Reset to default
+            this.style.borderColor = '';
+            this.style.boxShadow = '';
+        });
+        
+        // Create CSS3D object
+        const objectCSS = new CSS3DObject(element);
+        objectCSS.position.x = Math.random() * 4000 - 2000;
+        objectCSS.position.y = Math.random() * 4000 - 2000;
+        objectCSS.position.z = Math.random() * 4000 - 2000;
+        objectCSS.element = element;
+        scene.add(objectCSS);
+        objects.push(objectCSS);
+    });
+}
+
+// Color function for tiles (red, orange/yellow, green based on net worth)
+function getTileColor(netWorth) {
+    if (!netWorth && netWorth !== 0) {
+        return 'rgba(0, 100, 180, 1)'; // Blue for empty
+    }
+    
+    // Extract numeric value
+    const str = String(netWorth).replace(/[$,]/g, '').trim();
+    const num = parseFloat(str);
+    
+    if (isNaN(num)) {
+        // If it's not a number, use a neutral color
+        return 'rgba(150, 150, 150, 1)';
+    }
+    
+    // Red, Yellow, Green color scheme:
+    // Red: < 100,000
+    // Yellow: >= 100,000 and <= 200,000
+    // Green: > 200,000
+    
+    if (num < 100000) {
+        return 'rgba(255, 80, 80, 1)'; // Red
+    } else if (num <= 200000) {
+        return 'rgba(255, 200, 50, 1)'; // Yellow (brighter than orange)
+    } else {
+        return 'rgba(80, 220, 100, 1)'; // Green
+    }
+}
+
+
+         // helper: format numeric-like net worth (best-effort)
+         function formatCurrency(val) {
+            if (val === null || val === undefined || val === '') return '';
+            const s = String(val).replace(/[$,]/g, '').trim();
+            const n = Number(s);
+            if (!isFinite(n)) return String(val); // if it's text, return raw
+            // format as local currency (USD-like)
+            return '$' + n.toLocaleString();
+        }
+
+         function netWorthColor(val) {
+            // flexible parsing: remove $ and commas, then try number
+            if (!val && val !== 0) return 'rgba(20,20,20,0.6)'; // neutral when empty
+            const s = String(val).replace(/[$,]/g, '').trim();
+            const n = Number(s);
+            if (!isFinite(n)) {
+                // if text category, use a hue map (simple hash)
+                let h = 200;
+                if (typeof val === 'string') {
+                    let sum = 0;
+                    for (let i=0;i<val.length;i++) sum += val.charCodeAt(i);
+                    h = 30 + (sum % 200);
+                }
+                return `hsl(${h} 70% 40% / 0.9)`;
+            }
+            if (n < 100000) return '#ff4d4f';
+            if (n <= 200000) return '#ff9f1a';
+            return '#21ba45';
+         }
+
+         // ------------ Targets builders ------------
+function buildTableTargets() {
+  targets.table.length = 0;
+
+  const cols = 20;
+  const rows = 10;
+  const sepX = 140;   // horizontal spacing, keep your previous value
+  const sepY = 180;   // vertical spacing
+
+  const offsetX = (cols - 1) * sepX / 2;
+  const offsetY = (rows - 1) * sepY / 2;
+
+  for (let i = 0; i < objects.length; i++) {
+    const col = i % cols;
+    const row = Math.floor(i / cols); // if > rows-1 this will continue downward (you can clamp/stack pages if needed)
+    const target = new THREE.Object3D();
+    target.position.x = col * sepX - offsetX;
+    target.position.y = -row * sepY + offsetY;
+    target.position.z = 0;
+    targets.table.push(target);
+  }
+}
+
+
+function buildSphereTargets() {
+				targets.sphere.length = 0;
+				const vector = new THREE.Vector3();
+				const l = objects.length;
+				for (let i = 0; i < l; i++) {
+					const phi = Math.acos(-1 + (2 * i) / l);
+					const theta = Math.sqrt(l * Math.PI) * phi;
+					const object = new THREE.Object3D();
+					object.position.setFromSphericalCoords(800, phi, theta);
+					vector.copy(object.position).multiplyScalar(2);
+					object.lookAt(vector);
+					targets.sphere.push(object);
+				}
+			}
+
+         // Double helix — side-by-side, centered vertically so it doesn't "stack" at the top
+// ---------- DOUBLE HELIX: side-by-side, centered vertically ----------
+// Double helix — side-by-side, centered vertically so it doesn't "stack" at the top
+function buildDoubleHelixTargets() {
+  targets.helix.length = 0;
+
+  const radius = 300;         // radius of each strand's spin
+  const strandOffset = 420;   // horizontal offset between the two strands (side-by-side)
+  const separation = 18;      // vertical step between elements along the strand
+  const angleStep = 0.35;     // how tight the helix winds
+
+  // how many items per strand (used to center vertically)
+  const perStrand = Math.ceil(objects.length / 2);
+  const centerY = (perStrand - 1) * separation / 2; // center so helix is vertically centered
+
+  objects.forEach((obj, i) => {
+    const strand = i % 2;                 // 0 = left, 1 = right
+    const indexAlong = Math.floor(i / 2); // position on the strand
+    const angle = indexAlong * angleStep + (strand === 1 ? Math.PI : 0);
+
+    const target = new THREE.Object3D();
+
+    // side-by-side: offset each strand horizontally
+    const baseX = strand === 0 ? -strandOffset : strandOffset;
+
+    // circular wrap around each strand
+    target.position.x = baseX + Math.cos(angle) * radius;
+    target.position.z = Math.sin(angle) * radius;
+
+    // center vertically so they don't bunch at the top
+    target.position.y = (indexAlong * separation) - centerY;
+
+    // make tile "face out" a bit like the sample
+    const lookAtVec = new THREE.Vector3(target.position.x * 2, target.position.y, target.position.z * 2);
+    target.lookAt(lookAtVec);
+
+    targets.helix.push(target);
+  });
+}
+
+
+
+// ---------- GRID: exactly 5 x 4 x 10 using demo spacing 400/400/1000 ----------
+function buildGridTargets() {
+  targets.grid.length = 0;
+
+  const gx = 5;   // columns per layer
+  const gy = 4;   // rows per layer
+  const gz = 10;  // number of layers
+  const spacingX = 300;
+  const spacingY = 300;
+  const spacingZ = 700;
+
+  const perLayer = gx * gy;
+  const layers = Math.ceil(objects.length / perLayer);
+
+  // center offsets (center entire multi-layer structure)
+  const offsetX = ((gx - 1) * spacingX) / 2;
+  const offsetY = ((gy - 1) * spacingY) / 2;
+  const offsetZ = ((layers - 1) * spacingZ) / 2;
+
+  for (let i = 0; i < objects.length; i++) {
+    const x = i % gx;
+    const y = Math.floor(i / gx) % gy;
+    const z = Math.floor(i / (gx * gy)); // layer index (0..)
+
+    const obj = new THREE.Object3D();
+    obj.position.x = (x * spacingX) - offsetX;
+    obj.position.y = - (y * spacingY) + offsetY;
+    obj.position.z = (z * spacingZ) - offsetZ;
+
+    targets.grid.push(obj);
+  }
+}
+
+         // -------------- Transform & animation (unchanged) ------------
+
+         function transform(targetsArr, duration) {
+    TWEEN.removeAll();
+    for (let i = 0; i < objects.length; i++) {
+        const object = objects[i];
+        const target = targetsArr[i];
+        if (!target) continue; // safety
+
+        new TWEEN.Tween(object.position)
+            .to({ x: target.position.x, y: target.position.y, z: target.position.z }, Math.random() * duration + duration)
+            .easing(TWEEN.Easing.Exponential.InOut)
+            .start();
+
+        new TWEEN.Tween(object.rotation)
+            .to({ x: target.rotation.x, y: target.rotation.y, z: target.rotation.z }, Math.random() * duration + duration)
+            .easing(TWEEN.Easing.Exponential.InOut)
+            .start();
+    }
+
+    new TWEEN.Tween(this)
+        .to({}, duration * 2)
+        .onUpdate(render)
+        .start();
+}
+
+
+         function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            render();
+         }
+
+         function animate(){
+            requestAnimationFrame( animate );
+            TWEEN.update();
+            controls.update();
+         }
+
+         function render() {
+            renderer.render( scene, camera );
+         }
+
+         // ------------- Sheet fetching helpers -------------
+
+         async function fetchPublicSheet() {
+            if (!SHEET_ID || SHEET_ID === 'YOUR_SHEET_ID_HERE') throw new Error('SHEET_ID not set in config');
+            const url =  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${SHEET_GID}`;
+            const res = await fetch(url); 
+            const txt = await res.text();
+            const json = JSON.parse(txt.match(/\{[\s\S]*\}/)[0]);
+            const cols = json.table.cols.map(c => c.label || c.id);
+            const rows = (json.table.rows || []).map(r => {
+                const obj = {};
+                (r.c || []).forEach((cell, i) => obj[cols[i] || `col${i}`] = cell ? cell.v : '');
+                return obj;
+            });
+            return rows;
+         }
+
+         async function loadSheetWithToken(token) {
+            try {
+                setStatus('fetching sheet via Sheets API...');
+                const RANGE = 'Sheet1!a1:Z500';
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(RANGE)}`;
+                const res = await fetch(url, { headers: {Authorization: 'Bearer' + token }});
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error('Sheets API error: ' + res.status + '' + text);
+                }
+                const json = await res.json();
+                const rows = (json.values && json.values.length) ? convertRowsToObjects(json.valiues) : [];
+                setStatus('sheet loaded via API: ' + rows.length + ' rows ');
+                buildFromRows(rows);
+                return rows;
+            } catch (err) {
+                console.error(err);
+                setStatus('Sheets API failed:' + err.message);
+                throw err;
+            }
+         }
+
+         function convertRowsToObjects(values) {
+            const header = values[0].map(h => h || '');
+            return values.slice(1).map(r => {
+                const obj = {};
+                header.forEach((h,i) => obj[h || `col${i}`] = r[i] ?? '');
+                return obj;
+            });
+         }
+
+         // ------------ helpers / sample data --------------
+
+         function makeSampleRows(n) {
+            const arr = [];
+            for (let i=0;i<n;i++) {
+                arr.push({
+                    'Name': 'Item ' + (i+1),
+                    'Net Worth': Math.floor(Math.random()*3000000),
+                    'Category': ['Alpha', 'Beta', 'Gamma', 'Delta'][i%4]
+                });
+            }
+            return arr;
+         }
+
+         window.loadSheetWithToken = loadSheetWithToken;
+    </script>
+</body>
+</html>
